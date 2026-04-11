@@ -125,3 +125,135 @@ print(f"Flag: {flag.strip()}")
 ```
 
 flag thu được: PTITCTF{bdc90e23aa0415e94d0ac46a938efcf3}
+
+
+### ThitNhi.exe
+
+Khi nhìn vào mã giả hàm main ta thấy một mảng dữ liệu:
+```
+  v11[0] = 125;
+  v11[1] = 8;
+  v11[2] = -19;
+  v11[3] = 71;
+  v11[4] = -27;
+  v11[5] = 0;
+  v11[6] = -120;
+  v11[7] = 58;
+  v11[8] = 122;
+  v11[9] = 54;
+  v11[10] = 2;
+  v11[11] = 41;
+  v11[12] = -28;
+  v11[13] = 0;
+```
+
+Khi đổi từ hệ thập phân sang hệ hexa ta thu được đoạn hex sau: 7D 08 ED 47 E5 00 88 3A 7A 36 02 29 E4 (Bỏ giá trị 00 ở cuối)
+
+Nhìn vào hàm sub_401120 ta thấy nội dung:
+```
+unsigned int __cdecl sub_401120(char *Buffer, int n13, unsigned int *a3, int n4, _DWORD *a5)
+{
+  int v5; // eax
+  unsigned int result; // eax
+  _BYTE v7[512]; // [esp+0h] [ebp-21Ch]
+  int v8; // [esp+200h] [ebp-1Ch]
+  int k; // [esp+204h] [ebp-18h]
+  int v10; // [esp+208h] [ebp-14h]
+  int j; // [esp+20Ch] [ebp-10h]
+  int i; // [esp+210h] [ebp-Ch]
+  int v13; // [esp+214h] [ebp-8h]
+  char v14; // [esp+21Bh] [ebp-1h]
+
+  v13 = 0;
+  v8 = 0;
+  v10 = 0;
+  v5 = sub_401080((int (__cdecl *)(int, const char **, const char **))sub_401120);
+  result = *a3 + sub_4010C0((int (__cdecl *)(int, const char **, const char **))sub_401120, v5);
+  *a3 = result;
+  for ( i = 0; i < 256; ++i )
+  {
+    v7[i + 256] = i;
+    v7[i] = *((_BYTE *)a3 + i % n4);
+    result = i + 1;
+  }
+  for ( j = 0; j < 256; ++j )
+  {
+    v13 = ((unsigned __int8)v7[j] + v13 + (unsigned __int8)v7[j + 256]) % 256;
+    v14 = v7[v13 + 256];
+    v7[v13 + 256] = v7[j + 256];
+    v7[j + 256] = v14;
+    result = j + 1;
+  }
+  v13 = 0;
+  for ( k = 0; k < n13; ++k )
+  {
+    v10 = (v10 + 1) % 256;
+    v13 = (v13 + (unsigned __int8)v7[v10 + 256]) % 256;
+    v14 = v7[v13 + 256];
+    v7[v13 + 256] = v7[v10 + 256];
+    v7[v10 + 256] = v14;
+    v8 = ((unsigned __int8)v7[v13 + 256] + (unsigned __int8)v7[v10 + 256]) % 256;
+    *((_BYTE *)a5 + k) = v7[v8 + 256] ^ Buffer[k];
+    result = k + 1;
+  }
+  return result;
+}
+```
+
+Đây là hàm mã hóa RC4 với đầu vào là đoạn Buffer, key là biến v7
+
+Vậy ta chỉ cần tìm được giá trị v7 là có thể tìm lại được đoạn ban đầu
+
+Vậy v7 tìm như thế nào?
+
+Trước hết, ta vào hàm sub_4010C0, là hàm được gọi với kết quả return vào biến v7:
+```
+int __cdecl sub_4010C0(int (__cdecl *_main)(int argc, const char **argv, const char **envp), unsigned int i_1)
+{
+  unsigned int i; // [esp+4h] [ebp-8h]
+
+  for ( i = 0; i < i_1; ++i )
+  {
+    if ( *((unsigned __int8 *)_main + i) == 204 )
+      return 19;
+  }
+  return 55;
+}
+```
+Ta thấy 204 đổi sang hex là 0xCC. Về cơ bản thì hàm này có nhiệm vụ là quét 1 hàm được chỉ thị, nếu trong hàm này có chứa opcode CC bằng bất cứ lí do nào, nó sẽ trả vê 19. Còn không thì trả về 55
+
+Ta chọn Option -> General và setting như sau (để Number of opcodes lớn hơn 0)
+
+<img width="597" height="563" alt="ida_f6oVOq8yDJ" src="https://github.com/user-attachments/assets/01a17eb2-40b9-40e8-bd00-85ea4b21e25a" />
+
+Sử dụng text view, ta quan sát được có 1 opcode CC ở dòng
+
+<img width="1275" height="731" alt="ida_zIOCCh26DW" src="https://github.com/user-attachments/assets/e21129a7-9c7c-421e-9e7a-c4db059aa20a" />
+
+```
+.text:004013FE 8D 55 CC                       lea     edx, [ebp+Buffer]
+```
+
+Nghĩa là dù có đặt breakpoint ở hàm main hay không thì giá trị vẫn sẽ là 19 -> 0x13 -> v7 khi đưa vào hàm sẽ có giá trị là 0x13 ^ 0xDEADBEEF
+
+Tuy nhiên ở hàm RC4 ban nãy, sub_4010C0 lại được gọi để check chính hàm RC4 này
+```
+result = *a3 + sub_4010C0((int (__cdecl *)(int, const char **, const char **))sub_401120, v5);
+```
+
+Và nếu ta sử dụng text view kiểm tra hàm RC4, ta không thấy opcode CC nào cả -> giá trị hàm trả về là 55 hay 0x37
+
+Vậy là key trong hàm RC4 này sẽ là 0x13 ^ 0xDEADBEEF + 0x37 = 0x33BFADDE
+
+Giờ ta đã có key, và kết quả cần mã hóa, ta lên cryptii.com để decrypt như sau
+
+<img width="1920" height="997" alt="brave_bGjTQy6H6h" src="https://github.com/user-attachments/assets/475656c5-c7f6-453d-a26c-101a9d020861" />
+
+<img width="960" height="480" alt="cmd_I18MIziOFi" src="https://github.com/user-attachments/assets/2777a5d5-1174-4857-8c8f-e63044464b96" />
+
+Giải thành công, flag là: Flag{D1t_m3_H4_N41}
+
+
+### n1gg4.exe
+
+Khi mở bài này trong ida, ta thấy đây là 1 bài được đóng gói UPX, tuy nhiên khi sử dụng UPX để giải nén thì gặp tin
