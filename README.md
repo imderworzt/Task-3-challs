@@ -256,4 +256,83 @@ Giải thành công, flag là: Flag{D1t_m3_H4_N41}
 
 ### n1gg4.exe
 
-Khi mở bài này trong ida, ta thấy đây là 1 bài được đóng gói UPX, tuy nhiên khi sử dụng UPX để giải nén thì gặp tin
+Khi mở bài này trong ida, ta thấy đây là 1 bài được đóng gói UPX, tuy nhiên khi sử dụng UPX để giải nén thì bị báo header sai, vì vậy chúng ta có thể dùng Scylla để fix lại file.
+
+Sau đó, mở file dump đấy lên IDA
+
+<img width="1920" height="1080" alt="ida_o3cUQNFVmd" src="https://github.com/user-attachments/assets/a661efb9-fb63-4a99-85ac-04a536c89f94" />
+
+Vẫn có một số chỗ là các đoạn byte có thể sử dụng U và C để xem nó có phải là code được ẩn hay không (chắc vậy)
+
+Vậy chương trình này làm gì?
+
+Khi bạn nhập chuỗi plaintext, nó sẽ so sánh với chuỗi text sau khi được decrypt tại loc_40110C
+
+Tại loc_40110C:                        
+UPX0:0040110C                 xor     al, [ebx]
+UPX0:0040110E                 inc     edx
+UPX0:0040110F                 cmp     edx, dword_403710
+UPX0:00401115                 jb      short loc_40110C
+UPX0:00401117                 neg     al
+UPX0:00401119                 stosb
+UPX0:0040111A                 loop    loc_4010FC
+UPX0:0040111C                 popa
+UPX0:0040111D                 retn
+
+Viết lại pseudocode có thể ra như sau:
+```
+def decrypt_function():
+     for i in range(ecx):                    # Outer: decrypt ecx bytes
+         byte = encrypted_data[i]
+
+         for j in range(dword_403710):       # Inner: XOR với key pattern
+             byte ^= key[j]
+
+         byte = (-byte) & 0xFF               # Negate
+         output_buffer[i] = byte
+```
+
+Nó thực hiện:
+  - XOR loop (inner): XOR lặp lại dword_403710 lần
+  - Negation: Sau khi XOR xong, negate byte
+  - Store: STOSB lưu vào destination buffer
+  - Repeat: LOOP lặp cho tất cả bytes (ecx lần)
+
+Chúng ta tìm đến dword_403710
+
+```
+UPX0:00403710 dword_403710    dd 0                    ; DATA XREF: UPX0:0040110F↑r
+UPX0:00403710                                         ; UPX0:004013B3↑r ...
+```
+
+Vì giá trị của nó bằng 0 -> ta thấy hàm này thực ra chỉ thực hiện 2 dòng cuối trong pseudocode
+
+Đoạn plaintext thật sự được ghép từ 4 đoạn được decrypt bao gồm:
+Đoạn 1:
+004010C0  00 AD 8C C0 9D 95 AC CF  93 CD BD BD AD CD 94 9A
+004010D0  D3 B0 CD BE BA CF 92 9C  A9 CF 92 9C D0 89 B8 CF
+004010E0  9C CF 92 99 C0 92 8C CF  D3 AE CD 8A CD 8E 8D CD
+
+Đoạn 2: 
+004011E0                    B2 8C  AF 8B CD 8E 87 CF 92 9A (còn 6 byte đằng trước không thuộc đoạn cần sử dụng)
+004011F0  D0 8E 93 C0 8C CF D0 92  B0 8E D0 D8 CD CB CB    (còn 1 byte đằng sau không thuộc đoạn cần sử dụng)
+
+Đoạn 3: 
+0x40130B  AE C0 DF 8D CD CD 88 9D CD 90 8C DF 91 92
+
+Đoạn 4: 
+0x401386 BC CD  9E 8B 99 B0 8E CF 8A CF 94 CD 99 CD
+
+Và 4 đoạn này khi decrypt sẽ tạo được 4 đoạn plaintext sau:
+Đoạn 1: St@ckT1m3CCS3lf-P3BF1ndW1nd0wH1d1ng@nt1-R3v3rs3
+Đoạn 2: NtQu3ry1nf0rm@t10nPr0(355
+Đoạn 3: R@!s33xc3pt!on
+Đoạn 4: D3bugPr1v1l3g3
+
+Ghép lại ta có: NtQu3ry1nf0rm@t10nPr0(355R@!s33xc3pt!onD3bugPr1v1l3g3St@ckT1m3CCS3lf-P3BF1ndW1nd0wH1d1ng@nt1-R3v3rs3
+
+Nhập vào phần mềm và nailed it!
+
+<img width="1258" height="384" alt="Discord_Kkg06pRRw7" src="https://github.com/user-attachments/assets/dc96abe5-b01b-40f8-9d8f-5c10f3273fcf" />
+
+### anti3.exe
