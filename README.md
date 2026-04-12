@@ -312,24 +312,36 @@ Vì giá trị của nó bằng 0 -> ta thấy hàm này thực ra chỉ thực 
 Đoạn plaintext thật sự được ghép từ 4 đoạn được decrypt bao gồm:
 
 Đoạn 1:
+```
 004010C0  00 AD 8C C0 9D 95 AC CF  93 CD BD BD AD CD 94 9A
 004010D0  D3 B0 CD BE BA CF 92 9C  A9 CF 92 9C D0 89 B8 CF
 004010E0  9C CF 92 99 C0 92 8C CF  D3 AE CD 8A CD 8E 8D CD
+```
 
 Đoạn 2: 
+```
 004011E0                    B2 8C  AF 8B CD 8E 87 CF 92 9A (còn 6 byte đằng trước không thuộc đoạn cần sử dụng)
 004011F0  D0 8E 93 C0 8C CF D0 92  B0 8E D0 D8 CD CB CB    (còn 1 byte đằng sau không thuộc đoạn cần sử dụng)
+```
 
 Đoạn 3: 
+```
 0x40130B  AE C0 DF 8D CD CD 88 9D CD 90 8C DF 91 92
+```
 
 Đoạn 4: 
+```
 0x401386 BC CD  9E 8B 99 B0 8E CF 8A CF 94 CD 99 CD
+```
 
 Và 4 đoạn này khi decrypt sẽ tạo được 4 đoạn plaintext sau:
+
 Đoạn 1: St@ckT1m3CCS3lf-P3BF1ndW1nd0wH1d1ng@nt1-R3v3rs3
+
 Đoạn 2: NtQu3ry1nf0rm@t10nPr0(355
+
 Đoạn 3: R@!s33xc3pt!on
+
 Đoạn 4: D3bugPr1v1l3g3
 
 Ghép lại ta có: NtQu3ry1nf0rm@t10nPr0(355R@!s33xc3pt!onD3bugPr1v1l3g3St@ckT1m3CCS3lf-P3BF1ndW1nd0wH1d1ng@nt1-R3v3rs3
