@@ -269,6 +269,7 @@ Vậy chương trình này làm gì?
 Khi bạn nhập chuỗi plaintext, nó sẽ so sánh với chuỗi text sau khi được decrypt tại loc_40110C
 
 Tại loc_40110C:                        
+```
 UPX0:0040110C                 xor     al, [ebx]
 UPX0:0040110E                 inc     edx
 UPX0:0040110F                 cmp     edx, dword_403710
@@ -278,6 +279,7 @@ UPX0:00401119                 stosb
 UPX0:0040111A                 loop    loc_4010FC
 UPX0:0040111C                 popa
 UPX0:0040111D                 retn
+```
 
 Viết lại pseudocode có thể ra như sau:
 ```
@@ -308,6 +310,7 @@ UPX0:00403710                                         ; UPX0:004013B3↑r ...
 Vì giá trị của nó bằng 0 -> ta thấy hàm này thực ra chỉ thực hiện 2 dòng cuối trong pseudocode
 
 Đoạn plaintext thật sự được ghép từ 4 đoạn được decrypt bao gồm:
+
 Đoạn 1:
 004010C0  00 AD 8C C0 9D 95 AC CF  93 CD BD BD AD CD 94 9A
 004010D0  D3 B0 CD BE BA CF 92 9C  A9 CF 92 9C D0 89 B8 CF
