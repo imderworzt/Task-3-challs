@@ -350,4 +350,334 @@ Nhập vào phần mềm và nailed it!
 
 <img width="1258" height="384" alt="Discord_Kkg06pRRw7" src="https://github.com/user-attachments/assets/dc96abe5-b01b-40f8-9d8f-5c10f3273fcf" />
 
-### anti3.exe
+### antidebug3.exe
+
+Bài này anti debug sử dụng exception flow. Flow của chương trình sẽ khác nếu debug và chạy thường
+
+<img width="459" height="659" alt="ida_9e0pkbyGHs" src="https://github.com/user-attachments/assets/5aeffe4b-9d87-4715-af21-5b37637e2052" />
+
+Hàm main này cố tình tạo phép tính chia cho 0, software interupt gây exception
+
+Logic thật sự của chương trình nằm ở Exception:
+
+```
+text:004014C0                TopLevelExceptionFilter:                ; DATA XREF: _main+6↓o
+.text:004014C0 55                             push    ebp
+.text:004014C1 8B EC                          mov     ebp, esp
+.text:004014C3 83 EC 10                       sub     esp, 10h
+.text:004014C6 53                             push    ebx
+.text:004014C7 56                             push    esi
+.text:004014C8 57                             push    edi
+.text:004014C9 74 03                          jz      short near ptr loc_4014CD+1
+.text:004014CB 75 01                          jnz     short near ptr loc_4014CD+1
+.text:004014CD
+.text:004014CD                loc_4014CD:                             ; CODE XREF: .text:004014C9↑j
+.text:004014CD                                                        ; .text:004014CB↑j
+.text:004014CD E8 C7 45 F8 00                 call    near ptr 1385A99h
+.text:004014CD                ; ---------------------------------------------------------------------------
+.text:004014D2 00 00                          dw 0
+.text:004014D4                ; ---------------------------------------------------------------------------
+.text:004014D4 00 64 A1 30                    add     [ecx+30h], ah
+.text:004014D4                ; ---------------------------------------------------------------------------
+.text:004014D8 00                             db    0
+.text:004014D9 00                             db    0
+.text:004014DA                ; ---------------------------------------------------------------------------
+.text:004014DA 00 89 45 F0 8B                 add     [ecx+4D8BF045h], cl
+.text:004014DA 4D
+.text:004014E0 F0 81 C1 C0 BF                 lock add ecx, 0BFC0h
+.text:004014E0 00 00
+.text:004014E7 89 4D F8                       mov     [ebp-8], ecx
+.text:004014EA 74 13                          jz      short loc_4014FF
+.text:004014EC 8B 55 F8                       mov     edx, [ebp-8]
+.text:004014EF 8B 02                          mov     eax, [edx]
+.text:004014F1 83 E0 70                       and     eax, 70h
+.text:004014F4 74 09                          jz      short loc_4014FF
+.text:004014F6 C7 45 F4 01 00                 mov     dword ptr [ebp-0Ch], 1
+.text:004014F6 00 00
+.text:004014FD EB 07                          jmp     short loc_401506
+.text:004014FF                ; ---------------------------------------------------------------------------
+.text:004014FF
+.text:004014FF                loc_4014FF:                             ; CODE XREF: .text:004014EA↑j
+.text:004014FF                                                        ; .text:004014F4↑j
+.text:004014FF C7 45 F4 00 00                 mov     dword ptr [ebp-0Ch], 0
+.text:004014FF 00 00
+.text:00401506
+.text:00401506                loc_401506:                             ; CODE XREF: .text:004014FD↑j
+.text:00401506 8B 4D F4                       mov     ecx, [ebp-0Ch]
+.text:00401509 81 F1 CD 00 00                 xor     ecx, 0CDh
+.text:00401509 00
+.text:0040150F 88 0D 83 40 40                 mov     byte_404083, cl
+.text:0040150F 00
+.text:00401515 8B 55 F0                       mov     edx, [ebp-10h]
+.text:00401518 0F B6 42 02                    movzx   eax, byte ptr [edx+2]
+.text:0040151C 35 AB 00 00 00                 xor     eax, 0ABh
+.text:00401521 A2 82 40 40 00                 mov     byte_404082, al
+.text:00401526 68 FC 40 40 00                 push    offset aEnterFlag ; "Enter flag: "
+.text:0040152B E8 20 FB FF FF                 call    sub_401050
+.text:00401530 83 C4 04                       add     esp, 4
+.text:00401533 68 40 46 40 00                 push    offset byte_404640
+.text:00401538 68 0C 41 40 00                 push    offset aS       ; "%s[\n]"
+.text:0040153D E8 7E FB FF FF                 call    sub_4010C0
+.text:00401542 83 C4 08                       add     esp, 8
+.text:00401545 6A 64                          push    64h ; 'd'
+.text:00401547 68 40 46 40 00                 push    offset byte_404640
+.text:0040154C 68 60 45 40 00                 push    offset unk_404560
+.text:00401551 FF 15 38 30 40                 call    ds:memcpy
+.text:00401551 00
+.text:00401557 83 C4 0C                       add     esp, 0Ch
+.text:0040155A E8 A1 FE FF FF                 call    sub_401400
+.text:0040155F A3 14 41 40 00                 mov     dword_404114, eax
+.text:00401564 C7 45 FC 00 00                 mov     dword ptr [ebp-4], 0
+.text:00401564 00 00
+.text:0040156B EB 09                          jmp     short loc_401576
+.text:0040156D                ; ---------------------------------------------------------------------------
+.text:0040156D
+.text:0040156D                loc_40156D:                             ; CODE XREF: .text:00401592↓j
+.text:0040156D 8B 4D FC                       mov     ecx, [ebp-4]
+.text:00401570 83 C1 01                       add     ecx, 1
+.text:00401573 89 4D FC                       mov     [ebp-4], ecx
+.text:00401576
+.text:00401576                loc_401576:                             ; CODE XREF: .text:0040156B↑j
+.text:00401576 83 7D FC 11                    cmp     dword ptr [ebp-4], 11h
+.text:0040157A 7D 18                          jge     short loc_401594
+.text:0040157C 8B 55 FC                       mov     edx, [ebp-4]
+.text:0040157F 0F BE 82 40 46                 movsx   eax, byte_404640[edx]
+.text:0040157F 40 00
+.text:00401586 83 F0 01                       xor     eax, 1
+.text:00401589 8B 4D FC                       mov     ecx, [ebp-4]
+.text:0040158C 88 81 40 46 40                 mov     byte_404640[ecx], al
+.text:0040158C 00
+.text:00401592 EB D9                          jmp     short loc_40156D
+.text:00401594                ; ---------------------------------------------------------------------------
+.text:00401594
+.text:00401594                loc_401594:                             ; CODE XREF: .text:0040157A↑j
+.text:00401594 68 52 46 40 00                 push    offset unk_404652
+.text:00401599 E8 C2 FE FF FF                 call    sub_401460
+.text:0040159E 83 C4 04                       add     esp, 4
+.text:004015A1 33 C0                          xor     eax, eax
+.text:004015A3 5F                             pop     edi
+.text:004015A4 5E                             pop     esi
+.text:004015A5 5B                             pop     ebx
+.text:004015A6 8B E5                          mov     esp, ebp
+.text:004015A8 5D                             pop     ebp
+.text:004015A9 C2 04 00                       retn    4
+```
+
+Trong này có gọi hàm sub_401400 đi tìm 0xCC
+
+```
+int sub_401400()
+{
+  unsigned int i_1; // [esp+4h] [ebp-8h]
+  unsigned int i; // [esp+8h] [ebp-4h]
+
+  i_1 = (char *)sub_4013F0 - (char *)&loc_401330 - 16;
+  for ( i = 0; i < i_1 && *((unsigned __int8 *)&loc_401330 + i) != 204; ++i )
+    ;
+  return i_1 - i + 48879;
+}
+```
+
+Và như bạn thấy ở trên, số opcode 0xCC trong hàm đúng bằng khả năng tôi qua môn thể chất: HOÀN TOÀN KHÔNG CÓ
+
+Vì vậy, nếu bạn đặt bp ở đây, có thể sẽ bị quét và điều chỉnh flow khác với flow cần đi
+
+Đọc pseudocode hàm so sánh:
+```
+int sub_401100()
+{
+  int result; // eax
+  char v1[4]; // [esp+0h] [ebp-Ch]
+  int i; // [esp+4h] [ebp-8h]
+
+  *(_DWORD *)v1 = 0;
+  for ( i = 0; i < 100; ++i )
+  {
+    if ( byte_404640[i] == byte_404118[i] )
+      ++*(_DWORD *)v1;
+  }
+  result = sub_401050(Format, v1[0]);
+  if ( *(_DWORD *)v1 == 100 )
+    return sub_401050(aYouGotItFlagKc, (char)&unk_404560);
+  return result;
+}
+```
+
+Ta thấy:
+`target_buf' chứa 100 bytes
+?/100 trong output là số bytes chính xác
+
+Logic mã hóa của bài này nằm trong hàm sub_401460 và các hàm được gọi sau đấy có thể giải thích như sau:
+```
+.text:00401460                ; int __cdecl sub_401460(int)
+.text:00401460                sub_401460      proc near               ; CODE XREF: .text:00401599↓p
+.text:00401460
+.text:00401460                var_4           = dword ptr -4
+.text:00401460                arg_0           = dword ptr  8
+.text:00401460
+.text:00401460 55                             push    ebp
+.text:00401461 8B EC                          mov     ebp, esp
+.text:00401463 51                             push    ecx
+.text:00401464 8D 45 08                       lea     eax, [ebp+arg_0]
+.text:00401467 50                             push    eax
+.text:00401468 E8 C3 FE FF FF                 call    loc_401330
+.text:0040146D 83 C4 04                       add     esp, 4
+.text:00401470 C7 45 FC 00 00                 mov     [ebp+var_4], 0
+.text:00401470 00 00
+.text:00401477 EB 09                          jmp     short loc_401482
+.text:00401479                ; ---------------------------------------------------------------------------
+.text:00401479
+.text:00401479                loc_401479:                             ; CODE XREF: sub_401460+42↓j
+.text:00401479 8B 4D FC                       mov     ecx, [ebp+var_4]
+.text:0040147C 83 C1 01                       add     ecx, 1
+.text:0040147F 89 4D FC                       mov     [ebp+var_4], ecx
+.text:00401482
+.text:00401482                loc_401482:                             ; CODE XREF: sub_401460+17↑j
+.text:00401482 83 7D FC 09                    cmp     [ebp+var_4], 9
+.text:00401486 7D 1C                          jge     short loc_4014A4
+.text:00401488 8B 55 FC                       mov     edx, [ebp+var_4]
+.text:0040148B 8B 45 08                       mov     eax, [ebp+arg_0]
+.text:0040148E 0F B7 0C 50                    movzx   ecx, word ptr [eax+edx*2]
+.text:00401492 33 0D 14 41 40                 xor     ecx, dword_404114
+.text:00401492 00
+.text:00401498 8B 55 FC                       mov     edx, [ebp+var_4]
+.text:0040149B 8B 45 08                       mov     eax, [ebp+arg_0]
+.text:0040149E 66 89 0C 50                    mov     [eax+edx*2], cx
+.text:004014A2 EB D5                          jmp     short loc_401479
+.text:004014A4                ; ---------------------------------------------------------------------------
+.text:004014A4
+.text:004014A4                loc_4014A4:                             ; CODE XREF: sub_401460+26↑j
+.text:004014A4 8B 4D 08                       mov     ecx, [ebp+arg_0]
+.text:004014A7 83 C1 13                       add     ecx, 13h
+.text:004014AA 51                             push    ecx
+.text:004014AB E8 20 FD FF FF                 call    sub_4011D0
+.text:004014B0 83 C4 04                       add     esp, 4
+.text:004014B3 8B E5                          mov     esp, ebp
+.text:004014B5 5D                             pop     ebp
+.text:004014B6 C3                             retn
+.text:004014B6                sub_401460      endp
+.text:004014B6
+```
+
+- 17 bytes đầu: xor với 1
+
+- Bytes thứ 19 - 26: xor với (BeingDebugged ^ 0xAB). Mà giá trị của BeingDebugged là 0 hoặc 1 -> Nếu chạy bình thường thì giá trị này bằng 0
+    -> Các bytes này đúng ra sẽ được xor với 0 ^ 0xAB = 0xAB. Nhưng nếu quét được debug thì nó sẽ được xor với 1 ^ 0xAB = 0xAA
+
+- Bytes thứ 28 - 39: out[i] = (0xCD + i) ^ (((x << 1) & 0xff) | 1)
+    -> Đảo ngược lại sẽ là: z = out[i] ^ (0xCD + i)  -> Cần bruteforce tìm x thỏa mãn (((x << 1) & 0xff) | 1) == z và giá trị tương đương với các kí tự alphabet
+
+- Bytes thứ 41 - 58: xor với 0xBEEF
+
+- Bytes thứ 60 - 64: buf[i] = ror8(buf[i], i) -> đảo ngược sẽ là buf[i] = ror18(buf[i], i)
+
+- Bytes thứ 66 - 69: xor với 0xC0FE1337
+
+- Bytes thứ 71 - 100: Như các bạn thấy ở đây có 30 bytes, và vòng lặp của khúc này là xor byte thứ i với bytes thứ i - 1 (với i < 0)
+
+Vào hex-view ta thấy đoạn hex sau:
+
+<img width="1549" height="773" alt="ida_BHh9oqlaPu" src="https://github.com/user-attachments/assets/1d6bbe50-62ec-4ae0-ba3a-23ed4294e9af" />
+
+Ta thấy có 1 string: toi5Oem22yB2qUh1o. Khả năng chuỗi byte encrypt bắt đầu từ đây, vậy 100 bytes này là: 
+
+```
+                         74 6F 69 35 4F 65 6D 32
+32 79 42 32 71 55 68 31  6F 5F DB CE C9 EF CE C9
+FE 92 5F 10 27 BC 09 0E  17 BA 4D 18 0F BE AB 5F
+9C 8E A9 89 98 8A 9D 8D  D7 CC DC 8A A4 CE DF 8F
+81 89 5F 69 37 1D 46 46  5F 5E 7D 8A F3 5F 59 01
+57 67 06 41 78 01 65 2D  7B 0E 57 03 68 5D 07 69
+23 55 37 60 14 7E 1D 2F  62 5F 62 5F
+```
+
+Ta viết script giải (with the help of AI)
+
+```
+import struct  
+import string  
+  
+TARGET = bytes.fromhex(  
+    "746f69354f656d3232794232715568316f5f"  
+    "dbcec9efcec9fe92"  
+    "5f"  
+    "1027bc090e17ba4d180fbeab"  
+    "5f"  
+    "9c8ea989988a9d8dd7ccdc8aa4cedf8f8189"  
+    "5f"  
+    "69371d46465f5e7d8af3"  
+    "5f"  
+    "5901576706417801652d7b0e5703685d076923553760147e1d2f625f625f"  
+)  
+  
+ALPHABET = (string.ascii_letters + string.digits + "_").encode()  
+  
+def ror8(x, n):  
+    n &= 7  
+    return ((x >> n) | ((x << (8 - n)) & 0xff)) & 0xff  
+  
+def rol8(x, n):  
+    n &= 7  
+    return ((x << n) | (x >> (8 - n))) & 0xff  
+  
+def recover_inner(target: bytes) -> bytes:  
+    buf = bytearray(target)  
+  
+    # block 6: reverse xor-chain, offset 70..99  
+    for i in range(29, 0, -1):  
+        buf[70 + i] ^= buf[70 + i - 1]  
+  
+    # block 5: reverse int3 block, offset 65..68  
+    d = struct.unpack_from("<I", buf, 65)[0] ^ 0xC0FE1337  
+    struct.pack_into("<I", buf, 65, d)  
+  
+    # block 4: reverse int2d block, offset 59..63  
+    for i in range(5):  
+        buf[59 + i] = rol8(buf[59 + i], i)  
+  
+    # block 3: reverse 0xBEEF word xor, offset 40..57  
+    for i in range(9):  
+        idx = 40 + i * 2  
+        w = (buf[idx] | (buf[idx + 1] << 8)) ^ 0xBEEF  
+        buf[idx] = w & 0xff  
+        buf[idx + 1] = (w >> 8) & 0xff  
+  
+    # block 2: reverse ((x << 1) | 1) xor key, offset 27..38  
+    for i in range(12):  
+        idx = 27 + i  
+        z = buf[idx] ^ ((0xCD + i) & 0xff)  
+        cand = [c for c in ALPHABET if ((((c << 1) & 0xff) | 1) == z)]  
+        if len(cand) != 1:  
+            raise ValueError(f"ambiguous inverse at idx={idx}: {cand}")  
+        buf[idx] = cand[0]  
+  
+    # block 1: reverse xor 0xAB, offset 18..25  
+    for i in range(8):  
+        buf[18 + i] ^= 0xAB  
+  
+    # block 0: reverse xor 1, offset 0..16  
+    for i in range(17):  
+        buf[i] ^= 1  
+  
+    return bytes(buf)  
+  
+print(recover_inner(TARGET).decode())
+
+```
+
+Và output thu được là: unh4Ndl33xC3pTi0n_pebDebU9_nt9lob4Lfl49_s0F7w4r38r34Kp01n7_int2d_int3_YXV0aG9ydHVuYTk5ZnJvbWtjc2M===
+
+<img width="1549" height="1034" alt="RvRvpnGui_rAsvNE7skS" src="https://github.com/user-attachments/assets/b846232c-9374-43cb-9d81-5316c964b701" />
+
+Chạy chương trình: 
+
+<img width="984" height="509" alt="Code_oWRmaxWGOL" src="https://github.com/user-attachments/assets/83f3b0c9-88f7-4988-a613-d35cfb85b8ce" />
+
+### harder-medium-antidebug.exe:
+
+Đặt breakpoint vào những chỗ sau:
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/818ba728-f43a-4974-9cef-07ac4cbfad67" />
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/ddeff04c-809c-43ce-b966-72bba1563738" />
+
