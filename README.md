@@ -681,3 +681,11 @@ Chạy chương trình:
 
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/ddeff04c-809c-43ce-b966-72bba1563738" />
 
+<img width="1534" height="524" alt="ida_fKP5qajXhC" src="https://github.com/user-attachments/assets/a48306bf-d1eb-4d57-b7f0-29bbba6f4b36" />
+
+<img width="1468" height="365" alt="ida_tz380qkPR8" src="https://github.com/user-attachments/assets/6aa23205-31ac-4cc8-9319-86765f76c7b9" />
+
+<img width="1093" height="277" alt="ida_ZoKK8yYoOZ" src="https://github.com/user-attachments/assets/ae0c585e-5351-46c1-9632-164d6fc71057" />
+
+<img width="1536" height="755" alt="ida_KNdS0Ki9Rq" src="https://github.com/user-attachments/assets/2127c09b-ee02-4b46-95e3-f9090134ac6d" />
+
