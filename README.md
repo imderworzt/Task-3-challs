@@ -689,3 +689,40 @@ Chạy chương trình:
 
 <img width="1536" height="755" alt="ida_KNdS0Ki9Rq" src="https://github.com/user-attachments/assets/2127c09b-ee02-4b46-95e3-f9090134ac6d" />
 
+Fix lỗi 0x8000003:
+
+Debugger -> Debugger Options -> Edit Exceptions -> Chọn 8000003 -> Bỏ tick suspend và tick vào pass to aplication
+
+Giờ debug thôi. Từ đoạn này sửa EAX thành 0
+
+<img width="1920" height="1080" alt="ida_DwnBAO1eNV" src="https://github.com/user-attachments/assets/64686afd-d79b-4830-8a64-a3f8d38b7bdb" />
+
+Qua đoạn này nhập trước 12345678
+
+<img width="1920" height="1080" alt="ida_7MI4i3IVN5" src="https://github.com/user-attachments/assets/60fcbb71-6556-460f-9598-213a86f7c0dc" />
+
+Đến 2 đoạn này ta thấy 2 hàm ở EAX trỏ đến là SystemFunction002 (F) và SystemFunction032 (G)
+
+<img width="1920" height="1080" alt="ida_BvL6mLqG0g" src="https://github.com/user-attachments/assets/f4862b62-7066-48a7-aac1-8fc1e3198259" />
+
+<img width="1920" height="1080" alt="ida_3V31SXNy3w" src="https://github.com/user-attachments/assets/4ed8da4e-bd90-4427-acea-a65e8390fad2" />
+
+Thứ tự này là:
+
+  - C = F(G(G(G(G(F(P)))))) = F(G^4(F(P)))
+
+Hàm F (RC4 với key là 12345678) còn G là DES (ECB, key 30988C6642A8D86E)
+
+Với:
+
+ - P: password nhập vào
+ 
+ - C: hằng đích 24 28 14 4A 11 A0 7F E4
+ 
+ - Suy ngược từ ngoài vào trong ta thu được password cần là debugger
+
+Thử vào ta có: 
+
+<img width="979" height="512" alt="image" src="https://github.com/user-attachments/assets/355fba15-a5be-4d56-967f-bd6a8f125b80" />
+
+
