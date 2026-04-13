@@ -701,7 +701,7 @@ Qua đoạn này nhập trước 12345678
 
 <img width="1920" height="1080" alt="ida_7MI4i3IVN5" src="https://github.com/user-attachments/assets/60fcbb71-6556-460f-9598-213a86f7c0dc" />
 
-Đến 2 đoạn này ta thấy 2 hàm ở EAX trỏ đến là SystemFunction002 (F) và SystemFunction032 (G)
+Đến 2 đoạn này ta thấy 2 hàm ở EAX trỏ đến là SystemFunction002 (G) và SystemFunction032 (F)
 
 <img width="1920" height="1080" alt="ida_BvL6mLqG0g" src="https://github.com/user-attachments/assets/f4862b62-7066-48a7-aac1-8fc1e3198259" />
 
