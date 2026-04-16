@@ -405,6 +405,18 @@ Trong `_main`:
   - Có vòng lặp ngoài xử lý từng byte.
   - Có vòng lặp trong XOR theo key pattern, phụ thuộc `dword_403710`.
   - Sau đó có bước `neg al` (đảo dấu byte).
+```
+UPX0:0040110C loc_40110C:                             ; CODE XREF: UPX0:00401115↓j
+UPX0:0040110C                 xor     al, [ebx]
+UPX0:0040110E                 inc     edx
+UPX0:0040110F                 cmp     edx, dword_403710
+UPX0:00401115                 jb      short loc_40110C
+UPX0:00401117                 neg     al
+UPX0:00401119                 stosb
+UPX0:0040111A                 loop    loc_4010FC
+UPX0:0040111C                 popa
+UPX0:0040111D                 retn
+```
 
 - Điều quan trọng:
   - `dword_403710 = 0`
@@ -422,12 +434,41 @@ Trong `_main`:
 2. Mỗi byte áp dụng `(-b) & 0xFF`.
 3. Ghép theo thứ tự đúng để ra câu pass hoàn chỉnh.
 
+### 4.4 Vị trí của các segment
+
+1. Vị trí 0x4010C1
+
+```
+AD 8C C0 9D 95 AC CF 93 CD BD BD AD CD 94 9A D3
+B0 CD BE BA CF 92 9C A9 CF 92 9C D0 89 B8 CF 9C
+CF 92 99 C0 92 8C CF D3 AE CD 8A CD 8E 8D CD 5E
+```
+
+2. Vị trí 0x4011E6
+
+```
+B2 8C AF 8B CD 8E 87 CF 92 9A D0 8E 93 C0 8C CF
+D0 92 B0 8E D0 D8 CD CB CB
+```
+
+3. Vị trí 0x40130B
+
+```
+AE C0 DF 8D CD CD 88 9D CD 90 8C DF 91 92
+```
+
+4. Vị trí 0x401386
+
+```
+BC CD 9E 8B 99 B0 8E CF 8A CF 94 CD 99 CD
+```
+
 ### 4.4 PoC solve
 
 ```python
 seg1 = bytes.fromhex(
-    "00 AD 8C C0 9D 95 AC CF 93 CD BD BD AD CD 94 9A D3 B0 CD BE BA CF 92 9C "
-    "A9 CF 92 9C D0 89 B8 CF 9C CF 92 99 C0 92 8C CF D3 AE CD 8A CD 8E 8D CD"
+    "AD 8C C0 9D 95 AC CF 93 CD BD BD AD CD 94 9A D3 B0 CD BE BA CF 92 9C A9"
+    "CF 92 9C D0 89 B8 CF 9C CF 92 99 C0 92 8C CF D3 AE CD 8A CD 8E 8D CD 5E"
 )
 seg2 = bytes.fromhex("B2 8C AF 8B CD 8E 87 CF 92 9A D0 8E 93 C0 8C CF D0 92 B0 8E D0 D8 CD CB CB")
 seg3 = bytes.fromhex("AE C0 DF 8D CD CD 88 9D CD 90 8C DF 91 92")
@@ -436,17 +477,17 @@ seg4 = bytes.fromhex("BC CD 9E 8B 99 B0 8E CF 8A CF 94 CD 99 CD")
 def dec_neg(bs):
     return bytes(((-b) & 0xFF) for b in bs)
 
-p1 = dec_neg(seg1).decode()
-p2 = dec_neg(seg2).decode()
-p3 = dec_neg(seg3).decode()
-p4 = dec_neg(seg4).decode()
+# Sử dụng 'latin-1' thay vì 'utf-8'
+p1 = dec_neg(seg1).decode('latin-1')
+p2 = dec_neg(seg2).decode('latin-1')
+p3 = dec_neg(seg3).decode('latin-1')
+p4 = dec_neg(seg4).decode('latin-1')
 
 print("seg1:", p1)
 print("seg2:", p2)
 print("seg3:", p3)
 print("seg4:", p4)
 
-# Thứ tự ghép đúng theo flow
 full = p2 + p3 + p4 + p1
 print("full:", full)
 ```
@@ -454,11 +495,12 @@ print("full:", full)
 ### 4.5 Kết quả
 
 - Recover được chuỗi anti-debug đầy đủ để nhập vào chương trình.
-- Các segment giải ra (ghép lại vào nhau là xong):
-  - `St@ckT1m3CCS3lf-P3BF1ndW1nd0wH1d1ng@nt1-R3v3rs3`
-  - `NtQu3ry1nf0rm@t10nPr0(355`
-  - `R@!s33xc3pt!on`
-  - `D3bugPr1v1l3g3`
+- Output sau khi chạy đoạn code ở trên:
+    - seg1: St@ckT1m3CCS3lf-P3BF1ndW1nd0wH1d1ng@nt1-R3v3rs3¢
+    - seg2: NtQu3ry1nf0rm@t10nPr0(355
+    - seg3: R@!s33xc3pt!on
+    - seg4: D3bugPr1v1l3g3
+    - full: NtQu3ry1nf0rm@t10nPr0(355R@!s33xc3pt!onD3bugPr1v1l3g3St@ckT1m3CCS3lf-P3BF1ndW1nd0wH1d1ng@nt1-R3v3rs3¢
 
 ---
 
