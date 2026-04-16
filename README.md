@@ -387,32 +387,9 @@ Trong `_main`:
 - RC4 decrypt -> plain:
   - `D1t_m3_H4_N41`
 
-### 3.6 PoC solve
+### 3.6 PoC solve sử dụng Cyberchef để decrypt
 
-```python
-def rc4(key, data):
-    s = list(range(256))
-    j = 0
-    for i in range(256):
-        j = (j + s[i] + key[i % len(key)]) & 0xFF
-        s[i], s[j] = s[j], s[i]
-
-    i = j = 0
-    out = bytearray()
-    for b in data:
-        i = (i + 1) & 0xFF
-        j = (j + s[i]) & 0xFF
-        s[i], s[j] = s[j], s[i]
-        out.append(b ^ s[(s[i] + s[j]) & 0xFF])
-    return bytes(out)
-
-cipher = bytes.fromhex("7D 08 ED 47 E5 00 88 3A 7A 36 02 29 E4")
-key = bytes.fromhex("33 BF AD DE")
-plain = rc4(key, cipher).decode()
-
-print("plain:", plain)
-print("flag :", f"Flag{{{plain}}}")
-```
+<img width="1537" height="977" alt="yQ9BWpfus9" src="https://github.com/user-attachments/assets/ed088ec9-010c-4958-a204-cc2b5468534f" />
 
 ### 3.7 Kết quả
 
@@ -825,3 +802,4 @@ print (pw)
 
 - `I_10v3-y0U__wh3n Y0u=c411..M3 Senor1t4`
 
+<img width="1426" height="782" alt="anti3_gAPIWaWoVg" src="https://github.com/user-attachments/assets/3251d71c-d28a-4073-a299-98d56d960508" />
